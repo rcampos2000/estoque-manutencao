@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Fornecedores{% endblock %}
+{% block page_title %}🤝 Fornecedores{% endblock %}
+{% block content %}
+<button class="btn btn-success" onclick="document.getElementById('modal-novo').classList.add('show')" style="margin-bottom:14px">＋ Novo Fornecedor</button>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Nome</th><th>CNPJ</th><th>Telefone</th><th>E-mail</th><th>Contato</th></tr></thead>
+    <tbody>
+    {% for f in fornecedores %}
+    <tr><td><strong>{{ f.nome }}</strong></td><td>{{ f.cnpj or '—' }}</td><td>{{ f.telefone or '—' }}</td><td>{{ f.email or '—' }}</td><td>{{ f.contato or '—' }}</td></tr>
+    {% else %}<tr><td colspan="5" style="text-align:center;padding:30px;color:#90a4ae">Nenhum fornecedor cadastrado.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="modal-bg" id="modal-novo">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-novo').classList.remove('show')">✕</button>
+    <h3>＋ Novo Fornecedor</h3>
+    <form method="POST" action="/fornecedores/novo">
+      <div class="form-group"><label>Nome *</label><input class="form-control" name="nome" required></div>
+      <div class="form-group"><label>CNPJ</label><input class="form-control" name="cnpj"></div>
+      <div class="form-group"><label>Telefone</label><input class="form-control" name="telefone"></div>
+      <div class="form-group"><label>E-mail</label><input class="form-control" name="email" type="email"></div>
+      <div class="form-group"><label>Contato</label><input class="form-control" name="contato"></div>
+      <button class="btn btn-success" type="submit">💾 Salvar</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
