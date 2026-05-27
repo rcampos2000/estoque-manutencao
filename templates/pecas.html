@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Peças{% endblock %}
+{% block page_title %}📦 Peças de Reposição{% endblock %}
+{% block content %}
+<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+  <a href="/pecas/nova" class="btn btn-success">＋ Nova Peça</a>
+  <a href="/relatorios/estoque-excel" class="btn btn-primary">📤 Exportar Excel</a>
+</div>
+
+<div class="search-bar">
+  <form method="GET" style="display:contents">
+    <input class="form-control" name="q" value="{{ q }}" placeholder="🔍 Nome, código ou código de barras...">
+    <select class="form-control" name="cat" style="max-width:160px">
+      <option value="">Todas as categorias</option>
+      {% for c in categorias %}<option value="{{ c.id }}" {% if cat_id==c.id|string %}selected{% endif %}>{{ c.nome }}</option>{% endfor %}
+    </select>
+    <label style="display:flex;align-items:center;gap:6px;white-space:nowrap;color:#ccc;font-size:13px">
+      <input type="checkbox" name="critico" {% if critico %}checked{% endif %}> Apenas críticos
+    </label>
+    <button class="btn btn-primary" type="submit">🔍 Buscar</button>
+    <a href="/pecas" class="btn" style="background:#37474f;color:#fff">✖ Limpar</a>
+  </form>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr>
+      <th>Código</th><th>Cód.Barras</th><th>Nome</th><th>Categoria</th>
+      <th>Qtd</th><th>Mín</th><th>Unid</th><th>Localização</th>
+      <th>Custo Unit.</th><th>Valor Total</th><th>Ações</th>
+    </tr></thead>
+    <tbody>
+    {% for p in pecas %}
+    <tr class="{{ 'zerado' if p.quantidade==0 else ('critico' if p.quantidade<=p.estoque_minimo else '') }}">
+      <td><code>{{ p.codigo }}</code></td>
+      <td><small>{{ p.codigo_barras or '—' }}</small></td>
+      <td><strong>{{ p.nome }}</strong></td>
+      <td>{% if p.categoria_nome %}<span class="badge badge-info">{{ p.categoria_nome }}</span>{% endif %}</td>
+      <td><strong style="color:{{ '#ef5350' if p.quantidade==0 else ('#ffa726' if p.quantidade<=p.estoque_minimo else '#66bb6a') }}">{{ p.quantidade|round(1) }}</strong></td>
+      <td>{{ p.estoque_minimo|round(1) }}</td>
+      <td>{{ p.unidade }}</td>
+      <td>{{ p.localizacao_nome or '—' }}</td>
+      <td>{{ 'R$ %.2f'|format(p.custo_unitario) }}</td>
+      <td>{{ 'R$ %.2f'|format(p.quantidade * p.custo_unitario) }}</td>
+      <td>
+        <a href="/pecas/{{ p.id }}/editar" class="btn btn-sm btn-primary" title="Editar">✏️</a>
+        <a href="/movimentacoes/nova?peca_id={{ p.id }}&tipo=saida" class="btn btn-sm btn-warning" title="Saída">📤</a>
+        <a href="/movimentacoes/nova?peca_id={{ p.id }}&tipo=entrada" class="btn btn-sm btn-success" title="Entrada">📥</a>
+        <a href="/pecas/{{ p.id }}/etiqueta" class="btn btn-sm btn-purple" title="Etiqueta">🏷️</a>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="11" style="text-align:center;padding:30px;color:#90a4ae">Nenhuma peça encontrada.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p style="text-align:right;margin-top:8px;font-size:12px;color:#90a4ae">
+  Total: {{ pecas|length }} peças | Valor em estoque: R$ {{ valor_total }}
+</p>
+{% endblock %}
