@@ -1,6 +1,6 @@
 """
-app_web.py — Sistema de Controle de Peças de Reposição (versão Flask/Web)
-Compatível com Railway (cloud) e execução local.
+app_web.py â Sistema de Controle de PeÃ§as de ReposiÃ§Ã£o (versÃ£o Flask/Web)
+CompatÃ­vel com Railway (cloud) e execuÃ§Ã£o local.
 """
 import os, io, json
 from pathlib import Path
@@ -9,7 +9,7 @@ from functools import wraps
 from flask import (Flask, render_template, request, redirect, url_for,
                    session, flash, send_file, jsonify)
 
-# ── Caminhos (cloud-safe) ─────────────────────────────────────────────────────
+# ââ Caminhos (cloud-safe) âââââââââââââââââââââââââââââââââââââââââââââââââââââ
 APP_DIR  = Path(__file__).parent
 DATA_DIR = Path(os.environ.get('DATA_DIR', str(APP_DIR)))
 
@@ -18,14 +18,15 @@ import sys
 sys.path.insert(0, str(APP_DIR))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-# Sobrepõe DB_PATH antes de importar database
+# SobrepÃµe DB_PATH antes de importar database
 import database as db
 db.DB_PATH = str(DATA_DIR / "estoque_manutencao.db")
+db.inicializar_banco()   # garante tabelas mesmo com gunicorn
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'estoque-manutencao-secret-2024')
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ââ Helpers âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -53,7 +54,7 @@ def fmt_moeda(v):
 def inject_globals():
     return {'now': datetime.now().strftime('%d/%m/%Y %H:%M'), 'session': session}
 
-# ── ROTAS: Auth ───────────────────────────────────────────────────────────────
+# ââ ROTAS: Auth âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.route('/')
 def index():
     return redirect(url_for('dashboard') if session.get('usuario_id') else url_for('login'))
@@ -68,7 +69,7 @@ def login():
             session['nome']       = user['nome']
             session['perfil']     = user['perfil']
             return redirect(url_for('dashboard'))
-        error = 'Usuário ou senha inválidos'
+        error = 'UsuÃ¡rio ou senha invÃ¡lidos'
     return render_template('login.html', error=error)
 
 @app.route('/logout', methods=['POST'])
@@ -76,7 +77,7 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# ── ROTAS: Dashboard ──────────────────────────────────────────────────────────
+# ââ ROTAS: Dashboard ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -88,7 +89,7 @@ def dashboard():
     return render_template('dashboard.html',
         kpis=kpis, mensal=mensal, top10=top10, alertas=alertas)
 
-# ── ROTAS: Peças ──────────────────────────────────────────────────────────────
+# ââ ROTAS: PeÃ§as ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.route('/pecas')
 @login_required
 def pecas():
@@ -124,7 +125,7 @@ def peca_nova():
                 preco_venda=float(f.get('preco_venda',0) or 0),
             )
             db.inserir_peca(dados)
-            flash('Peça cadastrada com sucesso!', 'success')
+            flash('PeÃ§a cadastrada com sucesso!', 'success')
             return redirect(url_for('pecas'))
         except Exception as e:
             flash(f'Erro: {e}', 'error')
@@ -139,7 +140,7 @@ def peca_editar(peca_id):
     rows = db.listar_pecas(filtro='')
     peca = next((dict(r) for r in rows if r['id'] == peca_id), None)
     if not peca:
-        flash('Peça não encontrada.', 'error')
+        flash('PeÃ§a nÃ£o encontrada.', 'error')
         return redirect(url_for('pecas'))
     if request.method == 'POST':
         f = request.form
@@ -157,7 +158,7 @@ def peca_editar(peca_id):
                 preco_venda=float(f.get('preco_venda',0) or 0),
             )
             db.atualizar_peca(peca_id, dados)
-            flash('Peça atualizada!', 'success')
+            flash('PeÃ§a atualizada!', 'success')
             return redirect(url_for('pecas'))
         except Exception as e:
             flash(f'Erro: {e}', 'error')
@@ -170,17 +171,17 @@ def peca_editar(peca_id):
 @login_required
 def peca_excluir(peca_id):
     db.excluir_peca(peca_id)
-    flash('Peça removida.', 'success')
+    flash('PeÃ§a removida.', 'success')
     return redirect(url_for('pecas'))
 
 @app.route('/pecas/<int:peca_id>/etiqueta')
 @login_required
 def peca_etiqueta(peca_id):
-    """Gera etiqueta PNG com código de barras e QR Code."""
+    """Gera etiqueta PNG com cÃ³digo de barras e QR Code."""
     rows = db.listar_pecas(filtro='')
     peca = next((dict(r) for r in rows if r['id'] == peca_id), None)
     if not peca:
-        flash('Peça não encontrada.', 'error')
+        flash('PeÃ§a nÃ£o encontrada.', 'error')
         return redirect(url_for('pecas'))
     try:
         import barcode as pybr
@@ -198,13 +199,13 @@ def peca_etiqueta(peca_id):
             fs = ImageFont.truetype("arial.ttf", 10)
         except:
             ft = fn = fs = ImageFont.load_default()
-        draw.text((10,14), "CONTROLE DE ESTOQUE — MANUTENÇÃO INDUSTRIAL", fill="white", font=ft)
+        draw.text((10,14), "CONTROLE DE ESTOQUE â MANUTENÃÃO INDUSTRIAL", fill="white", font=ft)
         draw.text((10,52), peca['nome'][:48],           fill="#000", font=fn)
-        draw.text((10,70), f"Cód: {peca['codigo']}",   fill="#444", font=fs)
+        draw.text((10,70), f"CÃ³d: {peca['codigo']}",   fill="#444", font=fs)
         cat = peca.get('categoria_nome') or ''
         loc = peca.get('localizacao_nome') or ''
         draw.text((10,84), f"Cat: {cat}  |  Local: {loc}", fill="#555", font=fs)
-        draw.text((10,98), f"Qtd: {peca['quantidade']:.1f} {peca['unidade']}  |  Mín: {peca['estoque_minimo']:.1f}", fill="#555", font=fs)
+        draw.text((10,98), f"Qtd: {peca['quantidade']:.1f} {peca['unidade']}  |  MÃ­n: {peca['estoque_minimo']:.1f}", fill="#555", font=fs)
 
         barcode_val = peca.get('codigo_barras') or peca['codigo']
         try:
@@ -231,10 +232,10 @@ def peca_etiqueta(peca_id):
                          as_attachment=True,
                          download_name=f"etiqueta_{peca['codigo']}.png")
     except ImportError:
-        flash('Biblioteca de geração de etiqueta não disponível.', 'error')
+        flash('Biblioteca de geraÃ§Ã£o de etiqueta nÃ£o disponÃ­vel.', 'error')
         return redirect(url_for('pecas'))
 
-# ── ROTAS: Busca Rápida ───────────────────────────────────────────────────────
+# ââ ROTAS: Busca RÃ¡pida âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.route('/busca')
 @login_required
 def busca():
@@ -249,7 +250,7 @@ def busca():
             if rows: peca = dict(rows[0])
     return render_template('busca.html', q=q, peca=peca)
 
-# ── ROTAS: Movimentações ──────────────────────────────────────────────────────
+# ââ ROTAS: MovimentaÃ§Ãµes ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.route('/movimentacoes')
 @login_required
 def movimentacoes():
@@ -287,7 +288,7 @@ def mov_nova():
                 motivo=f.get('motivo','').strip() or None,
                 obs=f.get('observacao','').strip() or None,
             )
-            flash(f'Movimentação registrada com sucesso!', 'success')
+            flash(f'MovimentaÃ§Ã£o registrada com sucesso!', 'success')
             return redirect(url_for('pecas'))
         except Exception as e:
             flash(f'Erro: {e}', 'error')
@@ -296,7 +297,7 @@ def mov_nova():
         todas_pecas=todas_pecas,
         equipamentos=[dict(e) for e in db.listar_equipamentos()])
 
-# ── ROTAS: Alertas ────────────────────────────────────────────────────────────
+# ââ ROTAS: Alertas ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.route('/alertas')
 @login_required
 def alertas():
@@ -310,7 +311,7 @@ def alertas_marcar():
     flash('Alertas marcados como lidos.', 'success')
     return redirect(url_for('alertas'))
 
-# ── ROTAS: Relatórios ─────────────────────────────────────────────────────────
+# ââ ROTAS: RelatÃ³rios âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.route('/relatorios')
 @login_required
 def relatorios():
@@ -331,9 +332,9 @@ def rel_estoque():
 def rel_movimentacoes():
     import openpyxl
     rows = db.listar_movimentacoes(limit=50000)
-    wb = openpyxl.Workbook(); ws = wb.active; ws.title = "Movimentações"
-    ws.append(["Data/Hora","Tipo","Peça","Código","Qtd","Qtd Ant","Qtd Pos",
-                "O.S.","Equipamento","Usuário","Motivo"])
+    wb = openpyxl.Workbook(); ws = wb.active; ws.title = "MovimentaÃ§Ãµes"
+    ws.append(["Data/Hora","Tipo","PeÃ§a","CÃ³digo","Qtd","Qtd Ant","Qtd Pos",
+                "O.S.","Equipamento","UsuÃ¡rio","Motivo"])
     for r in rows:
         ws.append([r["data_hora"],r["tipo"],r["peca_nome"],r["peca_codigo"],
                    r["quantidade"],r["quantidade_ant"],r["quantidade_pos"],
@@ -348,8 +349,8 @@ def rel_movimentacoes():
 def rel_criticos():
     import openpyxl
     rows = db.listar_pecas(apenas_criticos=True)
-    wb = openpyxl.Workbook(); ws = wb.active; ws.title = "Críticos"
-    ws.append(["Código","Nome","Categoria","Qtd Atual","Qtd Mínima","Localização","Fornecedor"])
+    wb = openpyxl.Workbook(); ws = wb.active; ws.title = "CrÃ­ticos"
+    ws.append(["CÃ³digo","Nome","Categoria","Qtd Atual","Qtd MÃ­nima","LocalizaÃ§Ã£o","Fornecedor"])
     for r in rows:
         ws.append([r["codigo"],r["nome"],r["categoria_nome"],
                    r["quantidade"],r["estoque_minimo"],
@@ -359,7 +360,7 @@ def rel_criticos():
                      as_attachment=True,
                      download_name=f"criticos_{datetime.now().strftime('%Y%m%d')}.xlsx")
 
-# ── ROTAS: Equipamentos ───────────────────────────────────────────────────────
+# ââ ROTAS: Equipamentos âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.route('/equipamentos')
 @login_required
 def equipamentos():
@@ -371,14 +372,14 @@ def equipamentos():
 def equipamento_novo():
     f = request.form
     if not f.get('tag') or not f.get('nome'):
-        flash('TAG e Nome são obrigatórios.', 'error')
+        flash('TAG e Nome sÃ£o obrigatÃ³rios.', 'error')
     else:
         db.inserir_equipamento(f['tag'].strip().upper(), f['nome'].strip(),
                                f.get('setor',''), f.get('modelo',''), f.get('fabricante',''))
         flash('Equipamento cadastrado!', 'success')
     return redirect(url_for('equipamentos'))
 
-# ── ROTAS: Fornecedores ───────────────────────────────────────────────────────
+# ââ ROTAS: Fornecedores âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.route('/fornecedores')
 @login_required
 def fornecedores():
@@ -390,7 +391,7 @@ def fornecedores():
 def fornecedor_novo():
     f = request.form
     if not f.get('nome'):
-        flash('Nome é obrigatório.', 'error')
+        flash('Nome Ã© obrigatÃ³rio.', 'error')
     else:
         db.inserir_fornecedor({'nome':f['nome'],'cnpj':f.get('cnpj',''),
                                'telefone':f.get('telefone',''),
@@ -398,7 +399,7 @@ def fornecedor_novo():
         flash('Fornecedor cadastrado!', 'success')
     return redirect(url_for('fornecedores'))
 
-# ── ROTAS: Usuários ───────────────────────────────────────────────────────────
+# ââ ROTAS: UsuÃ¡rios âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.route('/usuarios')
 @admin_required
 def usuarios():
@@ -410,24 +411,24 @@ def usuarios():
 def usuario_novo():
     f = request.form
     if not f.get('nome') or not f.get('login') or not f.get('senha'):
-        flash('Nome, Login e Senha são obrigatórios.', 'error')
+        flash('Nome, Login e Senha sÃ£o obrigatÃ³rios.', 'error')
     else:
         db.inserir_usuario(f['nome'], f['login'], f['senha'], f.get('perfil','tecnico'))
-        flash(f"Usuário '{f['nome']}' criado!", 'success')
+        flash(f"UsuÃ¡rio '{f['nome']}' criado!", 'success')
     return redirect(url_for('usuarios'))
 
-# ── API: busca por barcode (JSON) ─────────────────────────────────────────────
+# ââ API: busca por barcode (JSON) âââââââââââââââââââââââââââââââââââââââââââââ
 @app.route('/api/barcode/<codigo>')
 @login_required
 def api_barcode(codigo):
     p = db.buscar_peca_barcode(codigo)
     if p: return jsonify(dict(p))
-    return jsonify({'error': 'Não encontrada'}), 404
+    return jsonify({'error': 'NÃ£o encontrada'}), 404
 
-# ── MAIN ──────────────────────────────────────────────────────────────────────
+# ââ MAIN ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 if __name__ == '__main__':
     db.inicializar_banco()
     port = int(os.environ.get('PORT', 5000))
-    print(f"\n✅ Sistema iniciado em http://localhost:{port}")
+    print(f"\nâ Sistema iniciado em http://localhost:{port}")
     print("   Login: admin / admin123\n")
     app.run(debug=True, host='0.0.0.0', port=port)
