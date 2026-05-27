@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Movimentações{% endblock %}
+{% block page_title %}📋 Histórico de Movimentações{% endblock %}
+{% block content %}
+<div class="search-bar">
+  <form method="GET" style="display:contents">
+    <select class="form-control" name="tipo" style="max-width:140px">
+      <option value="">Todos os tipos</option>
+      <option value="entrada"   {{ 'selected' if tipo=='entrada' }}>✅ Entrada</option>
+      <option value="saida"     {{ 'selected' if tipo=='saida' }}>📤 Saída</option>
+      <option value="ajuste"    {{ 'selected' if tipo=='ajuste' }}>🔧 Ajuste</option>
+      <option value="devolucao" {{ 'selected' if tipo=='devolucao' }}>↩️ Devolução</option>
+    </select>
+    <input class="form-control" name="q" value="{{ q }}" placeholder="🔍 Filtrar por peça..." style="max-width:220px">
+    <input class="form-control" name="di" type="date" value="{{ di }}" style="max-width:140px">
+    <input class="form-control" name="df" type="date" value="{{ df }}" style="max-width:140px">
+    <button class="btn btn-primary" type="submit">🔍 Filtrar</button>
+    <a href="/movimentacoes" class="btn" style="background:#37474f;color:#fff">✖</a>
+    <a href="/movimentacoes/nova" class="btn btn-success" style="margin-left:auto">＋ Nova</a>
+  </form>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Data/Hora</th><th>Tipo</th><th>Peça</th><th>Código</th><th>Qtd</th><th>Ant.</th><th>Pos.</th><th>O.S.</th><th>Equipamento</th><th>Usuário</th><th>Motivo</th></tr></thead>
+    <tbody>
+    {% for m in movs %}
+    <tr style="background:{{ '#1b3a1e' if m.tipo=='entrada' else ('#3e1515' if m.tipo=='saida' else '#1a237e' if m.tipo=='devolucao' else '#33691e') }}22">
+      <td><small>{{ m.data_hora[:16] if m.data_hora else '' }}</small></td>
+      <td>
+        {% if m.tipo=='entrada' %}<span class="badge badge-success">✅ Entrada</span>
+        {% elif m.tipo=='saida' %}<span class="badge badge-danger">📤 Saída</span>
+        {% elif m.tipo=='ajuste' %}<span class="badge badge-info">🔧 Ajuste</span>
+        {% else %}<span class="badge" style="background:#1a237e;color:#9fa8da">↩️ Devolução</span>{% endif %}
+      </td>
+      <td>{{ m.peca_nome or '—' }}</td>
+      <td><code>{{ m.peca_codigo or '' }}</code></td>
+      <td><strong>{{ m.quantidade|round(1) }}</strong></td>
+      <td style="color:#90a4ae">{{ m.quantidade_ant|round(1) }}</td>
+      <td style="color:#90a4ae">{{ m.quantidade_pos|round(1) }}</td>
+      <td><small>{{ m.os_numero or '' }}</small></td>
+      <td><small>{{ m.equipamento_tag or '' }}</small></td>
+      <td><small>{{ m.usuario_nome or '' }}</small></td>
+      <td><small>{{ m.motivo or '' }}</small></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="11" style="text-align:center;padding:30px;color:#90a4ae">Nenhuma movimentação encontrada.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p style="text-align:right;margin-top:8px;font-size:12px;color:#90a4ae">{{ movs|length }} registros</p>
+{% endblock %}
