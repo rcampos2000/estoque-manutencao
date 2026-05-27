@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Usuários{% endblock %}
+{% block page_title %}👤 Usuários{% endblock %}
+{% block content %}
+<button class="btn btn-success" onclick="document.getElementById('modal-novo').classList.add('show')" style="margin-bottom:14px">＋ Novo Usuário</button>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th>Ativo</th></tr></thead>
+    <tbody>
+    {% for u in usuarios %}
+    <tr>
+      <td><strong>{{ u.nome }}</strong></td>
+      <td><code>{{ u.login }}</code></td>
+      <td><span class="badge {{ 'badge-warning' if u.perfil=='admin' else 'badge-info' }}">{{ u.perfil }}</span></td>
+      <td>{% if u.ativo %}<span class="badge badge-success">Sim</span>{% else %}<span class="badge badge-danger">Não</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="modal-bg" id="modal-novo">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-novo').classList.remove('show')">✕</button>
+    <h3>＋ Novo Usuário</h3>
+    <form method="POST" action="/usuarios/novo">
+      <div class="form-group"><label>Nome *</label><input class="form-control" name="nome" required></div>
+      <div class="form-group"><label>Login *</label><input class="form-control" name="login" required></div>
+      <div class="form-group"><label>Senha *</label><input class="form-control" name="senha" type="password" required></div>
+      <div class="form-group"><label>Perfil</label>
+        <select class="form-control" name="perfil">
+          <option value="tecnico">Técnico</option>
+          <option value="admin">Admin</option>
+          <option value="consulta">Consulta</option>
+        </select></div>
+      <button class="btn btn-success" type="submit">💾 Salvar</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
