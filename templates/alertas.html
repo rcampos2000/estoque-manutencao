@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Alertas{% endblock %}
+{% block page_title %}🚨 Alertas de Estoque{% endblock %}
+{% block content %}
+<div style="display:flex;gap:8px;margin-bottom:16px">
+  <form method="POST" action="/alertas/marcar-lidos"><button class="btn btn-success">✅ Marcar todos como lidos</button></form>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Peça</th><th>Código</th><th>Qtd Atual</th><th>Status</th><th>Data</th><th>Mensagem</th></tr></thead>
+    <tbody>
+    {% for a in alertas %}
+    <tr class="{{ 'zerado' if a.quantidade==0 else 'critico' }}">
+      <td><strong>{{ a.peca_nome }}</strong></td>
+      <td><code>{{ a.peca_codigo }}</code></td>
+      <td><strong style="font-size:16px">{{ a.quantidade|round(1) }}</strong></td>
+      <td>{% if a.quantidade==0 %}<span class="badge badge-danger">🔴 ZERADO</span>{% else %}<span class="badge badge-warning">⚠️ CRÍTICO</span>{% endif %}</td>
+      <td><small>{{ a.criado_em[:16] if a.criado_em else '' }}</small></td>
+      <td><small>{{ a.mensagem }}</small></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" style="text-align:center;padding:40px;color:#90a4ae">🎉 Nenhum alerta no momento!</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
