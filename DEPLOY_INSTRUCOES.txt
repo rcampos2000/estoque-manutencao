@@ -1,0 +1,84 @@
+══════════════════════════════════════════════════════════════
+  GUIA DE DEPLOY — GitHub + Railway
+  Sistema de Controle de Peças de Reposição
+══════════════════════════════════════════════════════════════
+
+PASSO 1 — Criar repositório no GitHub
+───────────────────────────────────────
+1. Acesse: https://github.com/new
+2. Nome do repositório: estoque-manutencao
+3. Deixe VAZIO (sem README, sem .gitignore)
+4. Clique em "Create repository"
+
+PASSO 2 — Gerar token de acesso (PAT)
+───────────────────────────────────────
+1. Acesse: https://github.com/settings/tokens/new
+2. Note: "Upload estoque manutenção"
+3. Expiration: 7 days (suficiente para o upload)
+4. Marque apenas: [x] repo
+5. Clique "Generate token"
+6. COPIE o token gerado (começa com ghp_...)
+
+PASSO 3 — Configurar o script de upload
+───────────────────────────────────────
+1. Abra o arquivo: UPLOAD_GITHUB.py (com Bloco de Notas)
+2. Preencha as 3 linhas:
+   TOKEN = "ghp_seu_token_aqui"
+   OWNER = "seu_usuario_github"
+   REPO  = "estoque-manutencao"
+3. Salve o arquivo
+
+PASSO 4 — Executar o upload
+───────────────────────────────────────
+1. Clique 2x em: EXECUTAR_UPLOAD.bat
+2. Aguarde o upload de todos os arquivos
+3. Ao finalizar, você verá o link do repositório
+4. ⚠️ APAGUE o arquivo UPLOAD_GITHUB.py imediatamente!
+
+PASSO 5 — Deploy no Railway
+───────────────────────────────────────
+1. Acesse: https://railway.app
+2. Clique em "New Project"
+3. Selecione "Deploy from GitHub repo"
+4. Autorize o Railway a acessar seu GitHub
+5. Selecione o repositório: estoque-manutencao
+6. Railway detecta automaticamente o Procfile ✅
+
+PASSO 6 — Configurar variáveis de ambiente
+───────────────────────────────────────
+No painel do Railway, vá em Settings > Variables e adicione:
+   DATA_DIR   = /data
+   SECRET_KEY = EstoqueManu2024@Seguro!  (ou qualquer string)
+
+PASSO 7 — Adicionar Volume persistente
+───────────────────────────────────────
+1. No painel do Railway, clique em "Add Volume"
+2. Mount Path: /data
+3. Clique em "Add"
+4. Railway vai reiniciar o serviço automaticamente
+
+PASSO 8 — Acessar o sistema
+───────────────────────────────────────
+1. No painel Railway, clique em "Settings" > "Public Domain"
+2. Gere o domínio público (ex: estoque-manutencao.up.railway.app)
+3. Acesse o link no navegador
+4. Login: admin / admin123
+5. 🎉 Sistema funcionando na nuvem!
+
+══════════════════════════════════════════════════════════════
+  ACESSO LOCAL (sem internet)
+══════════════════════════════════════════════════════════════
+Para rodar localmente:
+   python app_web.py
+   Acesse: http://localhost:5000
+
+══════════════════════════════════════════════════════════════
+  ARQUIVOS IMPORTANTES
+══════════════════════════════════════════════════════════════
+app_web.py       → Backend Flask (versão web/nuvem)
+app.py           → App desktop (CustomTkinter)
+database.py      → Banco de dados SQLite (compartilhado)
+Procfile         → Configuração Railway/Heroku
+requirements.txt → Dependências Python
+iniciar.bat      → Abre o app DESKTOP
+EXECUTAR_UPLOAD.bat → Faz upload para o GitHub
