@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Relatórios{% endblock %}
+{% block page_title %}📊 Relatórios{% endblock %}
+{% block content %}
+<div style="max-width:700px;display:flex;flex-direction:column;gap:14px">
+  {% set relatorios = [
+    ('📦 Estoque Atual', 'Planilha Excel com todo o estoque atual, alertas e valor total', '/relatorios/estoque-excel', '#1565c0'),
+    ('📤 Movimentações', 'Histórico completo de entradas e saídas em Excel', '/relatorios/movimentacoes-excel', '#2e7d32'),
+    ('🚨 Itens Críticos', 'Lista de peças abaixo do estoque mínimo em Excel', '/relatorios/criticos-excel', '#e65100'),
+  ] %}
+  {% for titulo, desc, url, cor in relatorios %}
+  <div style="background:#16213e;border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+    <div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">{{ titulo }}</div>
+      <div style="font-size:13px;color:#90a4ae">{{ desc }}</div>
+    </div>
+    <a href="{{ url }}" class="btn" style="background:{{ cor }};color:#fff;white-space:nowrap">▶ Gerar</a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
