@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Busca Rápida{% endblock %}
+{% block page_title %}🔍 Busca Rápida{% endblock %}
+{% block content %}
+<p style="color:#90a4ae;margin-bottom:16px">Pesquise por código de barras (leitora USB), código ou nome da peça</p>
+
+<form method="GET" style="display:flex;gap:8px;margin-bottom:24px">
+  <input class="form-control" name="q" value="{{ q }}" placeholder="📷 Aponte a leitora ou digite aqui..." style="font-size:18px;padding:14px 18px" autofocus>
+  <button class="btn btn-primary" style="font-size:16px;padding:0 28px">🔍 BUSCAR</button>
+</form>
+
+{% if q and not peca %}
+<div class="alert alert-danger">❌ Nenhuma peça encontrada para: <strong>{{ q }}</strong></div>
+{% endif %}
+
+{% if peca %}
+<div style="background:#16213e;border-radius:14px;padding:24px">
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:280px">
+      <h2 style="font-size:20px;margin-bottom:4px">✅ {{ peca.nome }}</h2>
+      <p style="color:#90a4ae;font-size:13px">{{ peca.descricao or '' }}</p>
+      <div style="margin-top:14px;display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:13px">
+        <span style="color:#90a4ae">Código:</span><strong>{{ peca.codigo }}</strong>
+        <span style="color:#90a4ae">Cód.Barras:</span><span>{{ peca.codigo_barras or '—' }}</span>
+        <span style="color:#90a4ae">Categoria:</span><span>{{ peca.categoria_nome or '—' }}</span>
+        <span style="color:#90a4ae">Localização:</span><span>{{ peca.localizacao_nome or '—' }}</span>
+        <span style="color:#90a4ae">Fornecedor:</span><span>{{ peca.fornecedor_nome or '—' }}</span>
+        <span style="color:#90a4ae">Custo Unit.:</span><span>R$ {{ '%.2f'|format(peca.custo_unitario) }}</span>
+      </div>
+    </div>
+    <div style="text-align:center;padding:20px">
+      <div style="font-size:52px;font-weight:700;color:{{ '#ef5350' if peca.quantidade==0 else ('#ffa726' if peca.quantidade<=peca.estoque_minimo else '#66bb6a') }}">{{ peca.quantidade|round(1) }}</div>
+      <div style="font-size:18px;color:#90a4ae">{{ peca.unidade }}</div>
+      <div style="font-size:12px;color:#90a4ae;margin-top:4px">Mín: {{ peca.estoque_minimo }} | Máx: {{ peca.estoque_maximo }}</div>
+      {% if peca.quantidade==0 %}<span class="badge badge-danger" style="margin-top:8px;font-size:13px">🔴 ZERADO</span>
+      {% elif peca.quantidade<=peca.estoque_minimo %}<span class="badge badge-warning" style="margin-top:8px;font-size:13px">⚠️ CRÍTICO</span>
+      {% else %}<span class="badge badge-success" style="margin-top:8px;font-size:13px">✅ OK</span>{% endif %}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:20px;flex-wrap:wrap">
+    <a href="/movimentacoes/nova?peca_id={{ peca.id }}&tipo=saida"   class="btn btn-warning">📤 Registrar Saída</a>
+    <a href="/movimentacoes/nova?peca_id={{ peca.id }}&tipo=entrada" class="btn btn-success">📥 Registrar Entrada</a>
+    <a href="/pecas/{{ peca.id }}/etiqueta" class="btn btn-purple">🏷️ Gerar Etiqueta</a>
+    <a href="/movimentacoes?peca_id={{ peca.id }}" class="btn btn-primary">📋 Ver Histórico</a>
+    <a href="/pecas/{{ peca.id }}/editar" class="btn" style="background:#37474f;color:#fff">✏️ Editar</a>
+  </div>
+</div>
+{% endif %}
+
+{% if not q %}
+<div style="text-align:center;padding:40px;color:#90a4ae">
+  <div style="font-size:48px;margin-bottom:12px">📷</div>
+  <p>Use a leitora de código de barras USB ou digite o código/nome da peça</p>
+</div>
+{% endif %}
+{% endblock %}
