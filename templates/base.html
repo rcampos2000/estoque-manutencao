@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Controle de Estoque — Manutenção{% endblock %}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#1a1a2e;color:#e0e0e0;display:flex;min-height:100vh}
+a{color:#90caf9;text-decoration:none}
+/* SIDEBAR */
+.sidebar{width:220px;background:#16213e;display:flex;flex-direction:column;flex-shrink:0;min-height:100vh;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-brand{padding:20px 16px 12px;border-bottom:1px solid #333;text-align:center}
+.sidebar-brand .icon{font-size:32px}
+.sidebar-brand h2{font-size:15px;color:#fff;margin-top:4px;line-height:1.3}
+.sidebar-brand small{color:#90a4ae;font-size:11px}
+nav a{display:flex;align-items:center;gap:10px;padding:11px 16px;color:#cfd8dc;font-size:13px;border-radius:8px;margin:2px 8px;transition:all .18s}
+nav a:hover,nav a.active{background:#0f3460;color:#fff}
+.sidebar-footer{margin-top:auto;padding:12px 8px;border-top:1px solid #333}
+.sidebar-footer .user-info{text-align:center;font-size:11px;color:#90a4ae;margin-bottom:10px}
+.btn-sair{display:block;width:100%;padding:8px;background:#c62828;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px}
+.btn-sair:hover{background:#b71c1c}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow-x:hidden}
+.topbar{background:#16213e;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #333}
+.topbar h1{font-size:18px;color:#fff}
+.page-content{padding:24px;flex:1}
+/* CARDS */
+.cards-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.card{background:#16213e;border-radius:12px;padding:18px 20px;flex:1;min-width:140px}
+.card .card-icon{font-size:28px;margin-bottom:6px}
+.card .card-value{font-size:26px;font-weight:700}
+.card .card-label{font-size:11px;color:#90a4ae;margin-top:3px}
+/* TABELA */
+.table-wrap{background:#16213e;border-radius:12px;overflow:hidden;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#1565c0;color:#fff;padding:10px 12px;text-align:left;white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid #1e2d4a;vertical-align:middle}
+tr:hover td{background:#0f2040}
+tr.critico td{background:#3e1515}
+tr.zerado td{background:#2a0a0a}
+/* BOTÕES */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:all .18s}
+.btn-primary{background:#1565c0;color:#fff}.btn-primary:hover{background:#0d47a1}
+.btn-success{background:#2e7d32;color:#fff}.btn-success:hover{background:#1b5e20}
+.btn-danger{background:#c62828;color:#fff}.btn-danger:hover{background:#b71c1c}
+.btn-warning{background:#e65100;color:#fff}.btn-warning:hover{background:#bf360c}
+.btn-purple{background:#7b1fa2;color:#fff}.btn-purple:hover{background:#6a1b9a}
+.btn-sm{padding:5px 10px;font-size:12px}
+/* FORM */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;color:#90a4ae;margin-bottom:5px}
+.form-control{width:100%;padding:9px 12px;background:#0f3460;border:1px solid #1e3a5f;border-radius:8px;color:#e0e0e0;font-size:14px}
+.form-control:focus{outline:none;border-color:#1565c0}
+/* BADGES */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-success{background:#1b5e20;color:#a5d6a7}
+.badge-danger{background:#7f0000;color:#ef9a9a}
+.badge-warning{background:#e65100;color:#ffe0b2}
+.badge-info{background:#01579b;color:#b3e5fc}
+/* ALERT */
+.alert{padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px}
+.alert-danger{background:#3e1515;border:1px solid #c62828;color:#ef9a9a}
+.alert-success{background:#1b3a1e;border:1px solid #2e7d32;color:#a5d6a7}
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:#16213e;border-radius:14px;padding:28px;min-width:360px;max-width:560px;width:90%;position:relative;max-height:90vh;overflow-y:auto}
+.modal h3{margin-bottom:18px;font-size:17px}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:#90a4ae;font-size:20px;cursor:pointer}
+/* SEARCH BAR */
+.search-bar{display:flex;gap:8px;flex-wrap:wrap;background:#16213e;padding:14px;border-radius:10px;margin-bottom:14px;align-items:center}
+.search-bar .form-control{flex:1;min-width:180px}
+/* FLASH */
+.flashes{list-style:none;padding:0;margin-bottom:14px}
+.flashes li{padding:10px 16px;border-radius:8px;margin-bottom:6px;font-size:13px}
+.flashes li.success{background:#1b3a1e;color:#a5d6a7;border:1px solid #2e7d32}
+.flashes li.error{background:#3e1515;color:#ef9a9a;border:1px solid #c62828}
+/* RESPONSIVE */
+@media(max-width:768px){.sidebar{display:none}.cards-row{flex-direction:column}.search-bar{flex-direction:column}}
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="icon">⚙️</div>
+    <h2>Controle de Estoque</h2>
+    <small>Manutenção Industrial</small>
+  </div>
+  <nav>
+    <a href="/dashboard" class="{% if request.path=='/dashboard' %}active{% endif %}">🏠 Dashboard</a>
+    <a href="/pecas"     class="{% if '/pecas' in request.path %}active{% endif %}">📦 Peças</a>
+    <a href="/busca"     class="{% if request.path=='/busca' %}active{% endif %}">🔍 Busca Rápida</a>
+    <a href="/movimentacoes" class="{% if '/movimentacoes' in request.path %}active{% endif %}">📋 Movimentações</a>
+    <a href="/relatorios"    class="{% if request.path=='/relatorios' %}active{% endif %}">📊 Relatórios</a>
+    <a href="/alertas"   class="{% if request.path=='/alertas' %}active{% endif %}">🚨 Alertas</a>
+    <a href="/equipamentos" class="{% if '/equipamentos' in request.path %}active{% endif %}">🏭 Equipamentos</a>
+    <a href="/fornecedores" class="{% if '/fornecedores' in request.path %}active{% endif %}">🤝 Fornecedores</a>
+    {% if session.get('perfil')=='admin' %}
+    <a href="/usuarios"  class="{% if '/usuarios' in request.path %}active{% endif %}">👤 Usuários</a>
+    {% endif %}
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">👤 {{ session.get('nome','') }}<br><small>{{ session.get('perfil','') }}</small></div>
+    <form method="POST" action="/logout"><button class="btn-sair">Sair</button></form>
+  </div>
+</div>
+<div class="main">
+  <div class="topbar">
+    <h1>{% block page_title %}Sistema{% endblock %}</h1>
+    <span style="font-size:12px;color:#90a4ae">{{ now }}</span>
+  </div>
+  <div class="page-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<ul class="flashes">{% for cat,msg in messages %}<li class="{{ cat }}">{{ msg }}</li>{% endfor %}</ul>{% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </div>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>
