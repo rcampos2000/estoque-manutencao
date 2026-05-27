@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}📊 Dashboard{% endblock %}
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="cards-row">
+  <div class="card"><div class="card-icon">📦</div><div class="card-value">{{ kpis.total_pecas }}</div><div class="card-label">Total de Peças</div></div>
+  <div class="card"><div class="card-icon">⚠️</div><div class="card-value" style="color:#ffa726">{{ kpis.criticos }}</div><div class="card-label">Estoque Crítico</div></div>
+  <div class="card"><div class="card-icon">🔴</div><div class="card-value" style="color:#ef5350">{{ kpis.zerados }}</div><div class="card-label">Zerados</div></div>
+  <div class="card"><div class="card-icon">💰</div><div class="card-value" style="color:#66bb6a;font-size:18px">{{ kpis.valor_total }}</div><div class="card-label">Valor em Estoque</div></div>
+  <div class="card"><div class="card-icon">✅</div><div class="card-value" style="color:#42a5f5">{{ kpis.entradas_30d }}</div><div class="card-label">Entradas (30d)</div></div>
+  <div class="card"><div class="card-icon">📤</div><div class="card-value" style="color:#ff7043">{{ kpis.saidas_30d }}</div><div class="card-label">Saídas (30d)</div></div>
+  <div class="card"><div class="card-icon">🔔</div><div class="card-value" style="color:#ffa726">{{ kpis.alertas }}</div><div class="card-label">Alertas Ativos</div></div>
+</div>
+
+<div style="display:flex;gap:16px;flex-wrap:wrap">
+  <div style="flex:1;min-width:300px;background:#16213e;border-radius:12px;padding:20px">
+    <h3 style="margin-bottom:14px;font-size:14px">📈 Consumo Mensal (12 meses)</h3>
+    <canvas id="chartMensal" height="200"></canvas>
+  </div>
+  <div style="flex:1;min-width:300px;background:#16213e;border-radius:12px;padding:20px">
+    <h3 style="margin-bottom:14px;font-size:14px">🔥 Top 10 Mais Consumidas (30d)</h3>
+    <canvas id="chartTop" height="200"></canvas>
+  </div>
+</div>
+
+<div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap">
+  <div style="flex:1;min-width:300px;background:#16213e;border-radius:12px;padding:20px">
+    <h3 style="margin-bottom:12px;font-size:14px">🚨 Alertas de Estoque Crítico</h3>
+    <table><thead><tr><th>Peça</th><th>Qtd Atual</th><th>Status</th></tr></thead><tbody>
+    {% for a in alertas %}
+    <tr class="{{ 'zerado' if a.quantidade==0 else 'critico' }}">
+      <td>{{ a.peca_nome }}</td>
+      <td>{{ a.quantidade }}</td>
+      <td>{% if a.quantidade==0 %}<span class="badge badge-danger">🔴 ZERADO</span>{% else %}<span class="badge badge-warning">⚠️ CRÍTICO</span>{% endif %}</td>
+    </tr>
+    {% else %}<tr><td colspan="3" style="text-align:center;color:#90a4ae">Nenhum alerta 🎉</td></tr>
+    {% endfor %}
+    </tbody></table>
+  </div>
+  <div style="flex:1;min-width:300px;background:#16213e;border-radius:12px;padding:20px">
+    <h3 style="margin-bottom:12px;font-size:14px">🏆 Top Consumo (30 dias)</h3>
+    <table><thead><tr><th>Peça</th><th>Código</th><th>Saídas</th></tr></thead><tbody>
+    {% for t in top %}
+    <tr><td>{{ t.nome }}</td><td>{{ t.codigo }}</td><td><strong>{{ t.total_saido|round(1) }}</strong></td></tr>
+    {% else %}<tr><td colspan="3" style="text-align:center;color:#90a4ae">Sem movimentações</td></tr>
+    {% endfor %}
+    </tbody></table>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const mensal = {{ mensal | tojson }};
+const top10  = {{ top10  | tojson }};
+Chart.defaults.color = '#90a4ae';
+Chart.defaults.borderColor = '#1e2d4a';
+
+// Gráfico mensal
+if(mensal.length){
+  new Chart(document.getElementById('chartMensal'),{
+    type:'bar',
+    data:{
+      labels: mensal.map(r=>r.mes),
+      datasets:[
+        {label:'Entradas',data:mensal.map(r=>r.entradas||0),backgroundColor:'#2e7d32',borderRadius:4},
+        {label:'Saídas',  data:mensal.map(r=>r.saidas||0),  backgroundColor:'#c62828',borderRadius:4}
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{ticks:{maxRotation:45}},y:{beginAtZero:true}}}
+  });
+}
+
+// Top consumo
+if(top10.length){
+  new Chart(document.getElementById('chartTop'),{
+    type:'bar',
+    data:{
+      labels: top10.map(r=>r.nome.substring(0,22)),
+      datasets:[{label:'Saídas',data:top10.map(r=>r.total_saido),backgroundColor:'#1565c0',borderRadius:4}]
+    },
+    options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}
+  });
+}
+</script>
+{% endblock %}
