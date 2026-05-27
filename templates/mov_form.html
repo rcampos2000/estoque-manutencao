@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Nova Movimentação{% endblock %}
+{% block page_title %}📤 Registrar Movimentação{% endblock %}
+{% block content %}
+<div style="max-width:560px">
+{% if peca %}
+<div style="background:#0f3460;border-radius:10px;padding:16px;margin-bottom:20px">
+  <strong>{{ peca.nome }}</strong> <code style="margin-left:8px">{{ peca.codigo }}</code>
+  <div style="margin-top:6px;font-size:13px;color:#90a4ae">
+    Estoque atual: <strong style="color:#66bb6a;font-size:18px">{{ peca.quantidade|round(1) }} {{ peca.unidade }}</strong>
+    | Mínimo: {{ peca.estoque_minimo }}
+  </div>
+</div>
+{% endif %}
+<form method="POST">
+  <input type="hidden" name="peca_id" value="{{ peca.id if peca else '' }}">
+  {% if not peca %}
+  <div class="form-group"><label>Peça *</label>
+    <select class="form-control" name="peca_id" required>
+      <option value="">— Selecione —</option>
+      {% for p in todas_pecas %}<option value="{{ p.id }}" {{ 'selected' if peca and peca.id==p.id }}>{{ p.nome }} ({{ p.codigo }})</option>{% endfor %}
+    </select></div>
+  {% endif %}
+  <div class="form-group"><label>Tipo de Movimentação *</label>
+    <select class="form-control" name="tipo">
+      <option value="saida"     {{ 'selected' if tipo=='saida' }}>📤 Saída</option>
+      <option value="entrada"   {{ 'selected' if tipo=='entrada' }}>✅ Entrada</option>
+      <option value="ajuste"    {{ 'selected' if tipo=='ajuste' }}>🔧 Ajuste</option>
+      <option value="devolucao" {{ 'selected' if tipo=='devolucao' }}>↩️ Devolução</option>
+    </select></div>
+  <div class="form-group"><label>Quantidade *</label><input class="form-control" name="quantidade" type="number" step="0.1" min="0.1" required autofocus></div>
+  <div class="form-group"><label>Equipamento / TAG</label>
+    <select class="form-control" name="equipamento_id">
+      <option value="">— Nenhum —</option>
+      {% for e in equipamentos %}<option value="{{ e.id }}">{{ e.tag }} — {{ e.nome }}</option>{% endfor %}
+    </select></div>
+  <div class="form-group"><label>Nº da O.S.</label><input class="form-control" name="os_numero" placeholder="OS-0001"></div>
+  <div class="form-group"><label>Motivo</label><input class="form-control" name="motivo" placeholder="Manutenção preventiva..."></div>
+  <div class="form-group"><label>Observação</label><textarea class="form-control" name="observacao" rows="2"></textarea></div>
+  <div style="display:flex;gap:10px;margin-top:8px">
+    <button class="btn btn-success" type="submit">✔ Confirmar</button>
+    <a href="/pecas" class="btn" style="background:#37474f;color:#fff">✖ Cancelar</a>
+  </div>
+</form>
+</div>
+{% endblock %}
